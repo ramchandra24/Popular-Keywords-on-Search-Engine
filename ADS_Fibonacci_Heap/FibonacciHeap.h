@@ -140,11 +140,11 @@ void PQ_Fibonacci <T>:: printRecursive(PQ_Fibonacci <T>* firstNode, PQ_Fibonacci
         return;
     }
     printNode(curNode);
+    printRecursive(curNode->childNode, curNode->childNode);
     // If all nodes in the current level DLL have been printed, return to previous level
     if (firstNode == curNode->next) {
         return;
     }
-    printRecursive(curNode->childNode, curNode->childNode);
     printRecursive(firstNode, curNode->next);
 }
 
@@ -181,6 +181,7 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: insertNextToNode(PQ_Fibonacci <T>* node, P
     if (NULL == insertNode) {
         return node;
     }
+    //std::cout << "new child : " << node->data << " old child : " << insertNode->data << std::endl;
     PQ_Fibonacci <T>* nodeNext = node->next;
     PQ_Fibonacci <T>* lastInList = insertNode->prev;
 
@@ -188,6 +189,15 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: insertNextToNode(PQ_Fibonacci <T>* node, P
     insertNode->prev = node;
     lastInList->next = nodeNext;
     nodeNext->prev = lastInList;
+
+/*
+    PQ_Fibonacci <T>* temp = node;
+    do {
+        std::cout << temp->data << std::endl;
+        temp = temp->next;
+    } while (temp != node);
+*/
+
     return node;
 }
 
@@ -319,21 +329,27 @@ void PQ_Fibonacci <T> :: combine() {
     PQ_Fibonacci <T>* node = maxNode;
     PQ_Fibonacci <T>* exNode;
     PQ_Fibonacci <T>* firstNode = maxNode;
+    bool endFlag = true;
     do {
         if (degreeMap.end() != degreeMap.find(node->degree)) {
+            std::cout << "found degree : " << node->degree << " " << node->data << std::endl;
             exNode = degreeMap.at(node->degree);
             degreeMap.erase(node->degree);
-            printAllNodes();
+            //printAllNodes();
             //exNode = oustNode(exNode);
             node = makeSubtree(node, exNode);
             //insertNextToMax(node);
-            printAllNodes();
+            //printAllNodes();
+            firstNode = node;
+            endFlag = false;
         }
         else {
             degreeMap[node->degree] = node;
+            std::cout << "finding degree : " << node->degree << " " << node->data << std::endl;
             node = node->next;
+            endFlag = true;
         }
-    } while (node != firstNode);
+    } while ( (node != firstNode) || (!endFlag) );
 }
 
 
