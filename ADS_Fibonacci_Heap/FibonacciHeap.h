@@ -30,7 +30,7 @@ public:
     void dummy();
     void printNode(PQ_Fibonacci <T>* node);
     void printAllNodes();
-    void printRecursive(PQ_Fibonacci <T> * curNode);
+    void printRecursive(PQ_Fibonacci <T>* firstNode, PQ_Fibonacci <T> * curNode);
     void printBFS(PQ_Fibonacci <T> * curNode);
 };
 
@@ -113,33 +113,22 @@ void PQ_Fibonacci <T>:: printBFS(PQ_Fibonacci <T> * curNode) {
 }
 
 template <typename T>
-void PQ_Fibonacci <T>:: printRecursive(PQ_Fibonacci <T> * curNode) {
+void PQ_Fibonacci <T>:: printRecursive(PQ_Fibonacci <T>* firstNode, PQ_Fibonacci <T> * curNode) {
     if (NULL == curNode) {
         return;
     }
     printNode(curNode);
-    printRecursive(curNode->childNode);
-    printRecursive(curNode->next);
+    // If all nodes in the current level DLL have been printed, return to previous level
+    if (firstNode == curNode->next) {
+        return;
+    }
+    printRecursive(curNode->childNode, curNode->childNode);
+    printRecursive(firstNode, curNode->next);
 }
 
 template <typename T>
 void PQ_Fibonacci <T> :: printAllNodes() {
-    PQ_Fibonacci <T>* node = this;
-    PQ_Fibonacci <T>* firstNode = this;
-    while (node) {
-        printNode(node);
-        if (NULL == node->childNode) {
-            node = node->next;
-            // A cycle has been completed in the DLL
-            if (firstNode == node) {
-                break;
-            }
-        }
-        else {
-            node = node->childNode;
-        }
-    }
-
+    printRecursive(this, this);
 }
 
 #endif /* FIBONACCIHEAP_H_ */
