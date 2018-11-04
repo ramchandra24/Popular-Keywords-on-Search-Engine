@@ -2,6 +2,7 @@
 #define FIBONACCIHEAP_H_
 
 #include <queue>
+#include <unordered_map>
 
 template <typename T>
 class PQ_Fibonacci {
@@ -22,6 +23,7 @@ private:
     void combine();
 
     PQ_Fibonacci <T>* insertNextToMax(PQ_Fibonacci <T>* node);
+    PQ_Fibonacci <T>* insertNextToNode(PQ_Fibonacci <T>* node, PQ_Fibonacci <T>* insertNode);
     PQ_Fibonacci <T>* removeNodeDLL(PQ_Fibonacci <T>* node);
     PQ_Fibonacci <T>* removeNode(PQ_Fibonacci <T>* node);
     PQ_Fibonacci <T>* removeMaxNode();
@@ -147,10 +149,7 @@ void PQ_Fibonacci <T> :: printAllNodes() {
     printRecursive(maxNode, maxNode);
 }
 
-template <typename T>
-void PQ_Fibonacci <T> :: combine() {
-    printRecursive(this, this);
-}
+
 
 template <typename T>
 PQ_Fibonacci <T>* PQ_Fibonacci <T> :: insertNextToMax(PQ_Fibonacci <T>* node) {
@@ -168,7 +167,21 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: insertNextToMax(PQ_Fibonacci <T>* node) {
     return node;
 }
 
+template <typename T>
+PQ_Fibonacci <T>* PQ_Fibonacci <T> :: insertNextToNode(PQ_Fibonacci <T>* node, PQ_Fibonacci <T>* insertNode) {
+    // Nothing to insert
+    if (NULL == node) {
+        return insertNode;
+    }
+    PQ_Fibonacci <T>* nodeNext = node->next;
+    PQ_Fibonacci <T>* lastInList = insertNode->prev;
 
+    node->next = insertNode;
+    insertNode->prev = node;
+    lastInList->next = nodeNext;
+    nodeNext->prev = lastInList;
+    return node;
+}
 
 template <typename T>
 PQ_Fibonacci <T>* PQ_Fibonacci <T> :: removeNodeDLL(PQ_Fibonacci <T>* node) {
@@ -253,16 +266,49 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: removeMaxNode() {
 }
 
 
+
+template <typename T>
+void PQ_Fibonacci <T> :: makeSubtree(PQ_Fibonacci <T>* n1, PQ_Fibonacci <T>* n2) {
+    PQ_Fibonacci <T>* parentN;
+    PQ_Fibonacci <T>* childN;
+
+    if (n1->data > n2->data) {
+        parentN = n1;
+        childN = n2;
+    }
+    else {
+        parentN = n2;
+        childN = n2;
+    }
+    parentN->degree = 1 + n1->degree + n2->degree;
+    PQ_Fibonacci <T>* firstChild = parentN->childNode;
+    insertNextToNode(childN, firstChild);
+    parentN->childNode = childN;
+
+}
+
+template <typename T>
+void PQ_Fibonacci <T> :: combine() {
+    std::unordered_map<int, PQ_Fibonacci <T>*> degreeMap;
+
+    if (NULL == maxNode) {
+        return;
+    }
+    PQ_Fibonacci <T>* node = maxNode;
+    do {
+        if (degreeMap.end() != degreeMap.find(node->degree)) {
+
+        }
+    } while (node != firstNode);
+}
+
+
 template <typename T>
 PQ_Fibonacci <T>* PQ_Fibonacci <T> :: extractMax() {
     removeMaxNode();
-    std::cout << "printing extra" ;
-    printAllNodes();
     updateMaxNode();
 //    combine();
     return NULL;
 }
-
-
 
 #endif /* FIBONACCIHEAP_H_ */
