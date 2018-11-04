@@ -17,7 +17,7 @@ private:
 
 
 /* Private function declarations */
-    PQ_Fibonacci <T>* newNode(T data);
+    PQ_Fibonacci <T>* newNode(PQ_Fibonacci <T>* maxPQ, T data);
 
 /* Public function declarations */
 public:
@@ -27,7 +27,10 @@ public:
 
 
     void dummy();
-    void printNode(PQ_Fibonacci* node);
+    void printNode(PQ_Fibonacci <T>* node);
+    void printAllNodes();
+    void printRecursive(PQ_Fibonacci <T> * curNode);
+    void printBFS(PQ_Fibonacci <T> * curNode);
 };
 
 
@@ -39,8 +42,9 @@ PQ_Fibonacci <T> :: PQ_Fibonacci(T data) {
     this->degree = 0;
     this->childNode = NULL;
     this->parentNode = NULL;
-    this->next = NULL;
-    this->prev = NULL;
+    // Point the next and prev pointers to the same node initially
+    this->next = this;
+    this->prev = this;
 }
 
 template <typename T>
@@ -65,6 +69,7 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: newNode(PQ_Fibonacci <T>* maxPQ, T data) {
 template <typename T>
 PQ_Fibonacci <T>* PQ_Fibonacci <T> :: insertItem(T data) {
     PQ_Fibonacci <T>* node = newNode(this, data);
+    return node;
 }
 
 template <typename T>
@@ -74,7 +79,7 @@ void PQ_Fibonacci <T> :: dummy() {
 
 
 template <typename T>
-void PQ_Fibonacci <T> :: printNode(PQ_Fibonacci* node) {
+void PQ_Fibonacci <T> :: printNode(PQ_Fibonacci <T>* node) {
     std::cout << std::endl;
     std::cout << std::setw(10) << std::left << "Data" << ": " << node->data << std::endl;
     std::cout << std::setw(10) << std::left << "Degree" <<": " << node->degree << std::endl;
@@ -82,6 +87,50 @@ void PQ_Fibonacci <T> :: printNode(PQ_Fibonacci* node) {
     std::cout << std::endl;
 }
 
+template <typename T>
+void PQ_Fibonacci <T>:: printBFS(PQ_Fibonacci <T> * curNode) {
+    std::Queue <PQ_Fibonacci <T>*> fqueue;
+    if (NULL == curNode) {
+        return;
+    }
+    fqueue.push(curNode);
+    while(!fqueue.empty()) {
+        PQ_Fibonacci <T>* node = fqueue.pop();
+        printNode(node);
+        if (NULL != node->childNode) {
+            fqueue.push(node->childNode);
+        }
+    }
+}
 
+template <typename T>
+void PQ_Fibonacci <T>:: printRecursive(PQ_Fibonacci <T> * curNode) {
+    if (NULL == curNode) {
+        return;
+    }
+    printNode(curNode);
+    printRecursive(curNode->childNode);
+    printRecursive(curNode->next);
+}
+
+template <typename T>
+void PQ_Fibonacci <T> :: printAllNodes() {
+    PQ_Fibonacci <T>* node = this;
+    PQ_Fibonacci <T>* firstNode = this;
+    while (node) {
+        printNode(node);
+        if (NULL == node->childNode) {
+            node = node->next;
+            // A cycle has been completed in the DLL
+            if (firstNode == node) {
+                break;
+            }
+        }
+        else {
+            node = node->childNode;
+        }
+    }
+
+}
 
 #endif /* FIBONACCIHEAP_H_ */
