@@ -20,18 +20,20 @@ private:
 /* Private function declarations */
     PQ_Fibonacci <T>* newNode(PQ_Fibonacci <T>* maxPQ, T data);
     void combine();
-    PQ_Fibonacci <T>* extractMax();
+
     PQ_Fibonacci <T>* insertNextToMax(PQ_Fibonacci <T>* node);
     PQ_Fibonacci <T>* removeNodeDLL(PQ_Fibonacci <T>* node);
     PQ_Fibonacci <T>* removeNode(PQ_Fibonacci <T>* node);
+    PQ_Fibonacci <T>* removeMaxNode();
     void updateMaxNode();
+    void updateParentPointers(PQ_Fibonacci <T>* firstChild);
 
 /* Public function declarations */
 public:
     static PQ_Fibonacci <T>* maxNode; // Pointer to max node in the heap
     PQ_Fibonacci(T data);
     PQ_Fibonacci <T>* insertItem(T data);
-
+    PQ_Fibonacci <T>* extractMax();
 
 
     void dummy();
@@ -67,11 +69,9 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: newNode(PQ_Fibonacci <T>* maxPQ, T data) {
     PQ_Fibonacci <T>* node = new PQ_Fibonacci <T>(data);
 
     // Insert the newly added element next to max element
-    node->prev = maxPQ;
-    node->next = maxPQ->next;
-    maxPQ->next = node;
+    node = insertNextToMax(node);
     // Update max node
-    if (maxPQ->data < node->data) {
+    if (maxNode->data < node->data) {
         maxNode = node;
     }
     return node;
@@ -99,6 +99,8 @@ void PQ_Fibonacci <T> :: printNode(PQ_Fibonacci <T>* node) {
     std::cout << std::setw(10) << std::left << "Data" << ": " << node->data << std::endl;
     std::cout << std::setw(10) << std::left << "Degree" <<": " << node->degree << std::endl;
     std::cout << std::setw(10) << std::left << "ChildCut" << ": " << node->childCut << std::endl;
+    std::cout << std::setw(10) << std::left << "Next" << ": " << node->next->data << std::endl;
+    std::cout << std::setw(10) << std::left << "Prev" << ": " << node->prev->data << std::endl;
     std::cout << std::endl;
 }
 
@@ -142,7 +144,7 @@ void PQ_Fibonacci <T>:: printRecursive(PQ_Fibonacci <T>* firstNode, PQ_Fibonacci
 
 template <typename T>
 void PQ_Fibonacci <T> :: printAllNodes() {
-    printRecursive(this, this);
+    printRecursive(maxNode, maxNode);
 }
 
 template <typename T>
@@ -152,8 +154,9 @@ void PQ_Fibonacci <T> :: combine() {
 
 template <typename T>
 PQ_Fibonacci <T>* PQ_Fibonacci <T> :: insertNextToMax(PQ_Fibonacci <T>* node) {
+    // Nothing to insert
     if (NULL == node) {
-        return;
+        return NULL;
     }
     PQ_Fibonacci <T>* maxNext = maxNode->next;
     PQ_Fibonacci <T>* lastInList = node->prev;
@@ -192,12 +195,27 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: removeNodeDLL(PQ_Fibonacci <T>* node) {
 }
 
 
+
+template <typename T>
+void PQ_Fibonacci <T> :: updateParentPointers(PQ_Fibonacci <T>* firstChild) {
+    PQ_Fibonacci <T>* node = firstChild;
+    // No child nodes
+    if (NULL == firstChild) {
+        return;
+    }
+    do {
+        node->parentNode = NULL;
+        node = node->next;
+    } while (node != firstChild);
+}
+
 template <typename T>
 PQ_Fibonacci <T>* PQ_Fibonacci <T> :: removeNode(PQ_Fibonacci <T>* node) {
     // Remove node from DLL and get pointer to first child node
     PQ_Fibonacci <T>* child = removeNodeDLL(node);
+    updateParentPointers(child);
     insertNextToMax(child);
-    return NULL;
+    return child;
 }
 
 /*
@@ -208,31 +226,41 @@ template <typename T>
 void PQ_Fibonacci <T> :: updateMaxNode() {
     PQ_Fibonacci <T>* node = maxNode;
     PQ_Fibonacci <T>* firstNode = maxNode;
-    T nodeData = node->data;
     do {
-        if (nodeData < node->data) {
+        if (maxNode->data < node->data) {
             maxNode = node;
         }
         node = node->next;
-    } while (node != firstNode); // All nodes have been covered once
+    } while (node != firstNode); // All nodes to be covered once
 }
 
 template <typename T>
+PQ_Fibonacci <T>* PQ_Fibonacci <T> :: removeMaxNode() {
+    // If node being deleted is max node
+    PQ_Fibonacci <T>* maxNextNode = maxNode->next;
+    PQ_Fibonacci <T>* dnode = maxNode;
+    if (maxNextNode != maxNode) {
+        maxNode = maxNextNode;
+    }
+    // Only node in heap
+    else {
+        maxNode = NULL;
+    }
+    PQ_Fibonacci <T>* child = removeNode(dnode);
+    updateParentPointers(child);
+    insertNextToMax(child);
+    return child;
+}
+
+
+template <typename T>
 PQ_Fibonacci <T>* PQ_Fibonacci <T> :: extractMax() {
-    PQ_Fibonacci <T>* curNode = maxNode->childNode;
-    // Update parent pointers of all child nodes
-    PQ_Fibonacci <T>* firstChild = curNode;
-    do {
-        curNode->parentNode = NULL;
-        curNode = curNode->next;
-    } while (curNode != firstChild); // All nodes have been covered once
-    // Insert DLL of child nodes into top level tree
-    insertNextToMax(curNode);
-    // Delete max node
-    delete maxNode;
-    maxNode = curNode;
-    // Update max pointer to new node
-    updateMaxNode(maxNode);
+    removeMaxNode();
+    std::cout << "printing extra" ;
+    printAllNodes();
+    updateMaxNode();
+//    combine();
+    return NULL;
 }
 
 
