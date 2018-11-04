@@ -8,15 +8,24 @@ private:
     T data;
     unsigned int degree; // Number of nodes rooted at this node
     bool childCut;
-    PQ_Fibonacci* childNode; // Pointer to child node
+    PQ_Fibonacci <T>* childNode; // Pointer to one of the child nodes
+    PQ_Fibonacci <T>* parentNode; // Pointer to parent node
 
     // Pointers for next and previous nodes in doubly linked list
-    PQ_Fibonacci* next;
-    PQ_Fibonacci* prev;
+    PQ_Fibonacci <T>* next;
+    PQ_Fibonacci <T>* prev;
 
-/* Function declarations */
+
+/* Private function declarations */
+    PQ_Fibonacci <T>* newNode(T data);
+
+/* Public function declarations */
 public:
     PQ_Fibonacci(T data);
+    PQ_Fibonacci <T>* insertItem(T data);
+
+
+
     void dummy();
     void printNode(PQ_Fibonacci* node);
 };
@@ -24,19 +33,45 @@ public:
 
 /* Function definitions */
 template <typename T>
-void PQ_Fibonacci <T> :: dummy() {
-    std::cout << "Dummy function" << std::endl;
-}
-
-template <typename T>
 PQ_Fibonacci <T> :: PQ_Fibonacci(T data) {
     this->data = data;
     this->childCut = false;
     this->degree = 0;
     this->childNode = NULL;
+    this->parentNode = NULL;
     this->next = NULL;
     this->prev = NULL;
 }
+
+template <typename T>
+PQ_Fibonacci <T>* PQ_Fibonacci <T> :: newNode(PQ_Fibonacci <T>* maxPQ, T data) {
+    PQ_Fibonacci <T>* node = new PQ_Fibonacci <T>(data);
+    if (NULL == maxPQ) {
+        return node;
+    }
+
+    // Insert the newly added element next to max element
+    node->prev = maxPQ;
+    node->next = maxPQ->next;
+    maxPQ->next = node;
+    // Update max node
+    if (maxPQ->data < node->data) {
+        return node;
+    }
+    return maxPQ;
+}
+
+
+template <typename T>
+PQ_Fibonacci <T>* PQ_Fibonacci <T> :: insertItem(T data) {
+    PQ_Fibonacci <T>* node = newNode(this, data);
+}
+
+template <typename T>
+void PQ_Fibonacci <T> :: dummy() {
+    std::cout << "Dummy function" << std::endl;
+}
+
 
 template <typename T>
 void PQ_Fibonacci <T> :: printNode(PQ_Fibonacci* node) {
