@@ -1,6 +1,7 @@
 #ifndef FIBONACCIHEAP_H_
 #define FIBONACCIHEAP_H_
 
+#include <queue>
 
 template <typename T>
 class PQ_Fibonacci {
@@ -89,16 +90,24 @@ void PQ_Fibonacci <T> :: printNode(PQ_Fibonacci <T>* node) {
 
 template <typename T>
 void PQ_Fibonacci <T>:: printBFS(PQ_Fibonacci <T> * curNode) {
-    std::Queue <PQ_Fibonacci <T>*> fqueue;
+    std::queue <PQ_Fibonacci <T>*> fqueue;
     if (NULL == curNode) {
         return;
     }
+    PQ_Fibonacci <T>* firstNode = curNode;
+    // Push the root node
     fqueue.push(curNode);
+    PQ_Fibonacci <T>* node = curNode;
     while(!fqueue.empty()) {
-        PQ_Fibonacci <T>* node = fqueue.pop();
         printNode(node);
         if (NULL != node->childNode) {
             fqueue.push(node->childNode);
+        }
+        node = node->next;
+        if (node == firstNode) {
+            // Take out the topmost node in queue and print the lower levels
+            node = fqueue.pop();
+            firstNode = node;
         }
     }
 }
