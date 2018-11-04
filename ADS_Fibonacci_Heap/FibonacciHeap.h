@@ -102,6 +102,9 @@ void PQ_Fibonacci <T> :: printNode(PQ_Fibonacci <T>* node) {
     std::cout << std::setw(10) << std::left << "Data" << ": " << node->data << std::endl;
     std::cout << std::setw(10) << std::left << "Degree" <<": " << node->degree << std::endl;
     std::cout << std::setw(10) << std::left << "ChildCut" << ": " << node->childCut << std::endl;
+    if (node->parentNode) {
+        std::cout << std::setw(10) << std::left << "Parent" << ": " << node->parentNode->data << std::endl;
+    }
     std::cout << std::setw(10) << std::left << "Next" << ": " << node->next->data << std::endl;
     std::cout << std::setw(10) << std::left << "Prev" << ": " << node->prev->data << std::endl;
     std::cout << std::endl;
@@ -291,6 +294,7 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: makeSubtree(PQ_Fibonacci <T>* n1, PQ_Fibon
     parentN->degree = 1 + n1->degree + n2->degree;
     PQ_Fibonacci <T>* firstChild = parentN->childNode;
     parentN->childNode = insertNextToNode(childN, firstChild);
+    childN->parentNode = parentN;
     //parentN->childNode = childN;
     return parentN;
 }
