@@ -19,7 +19,7 @@ private:
 
 /* Private function declarations */
     PQ_Fibonacci <T>* newNode(PQ_Fibonacci <T>* maxPQ, T data);
-    PQ_Fibonacci <T>* combine(PQ_Fibonacci <T>* maxPQ);
+    void combine();
     PQ_Fibonacci <T>* extractMax();
     PQ_Fibonacci <T>* insertNextToMax(PQ_Fibonacci <T>* node);
     PQ_Fibonacci <T>* removeNodeDLL(PQ_Fibonacci <T>* node);
@@ -146,23 +146,17 @@ void PQ_Fibonacci <T> :: printAllNodes() {
 }
 
 template <typename T>
-PQ_Fibonacci <T>* PQ_Fibonacci <T> :: combine(PQ_Fibonacci <T>* maxPQ) {
+void PQ_Fibonacci <T> :: combine() {
     printRecursive(this, this);
 }
 
 template <typename T>
 PQ_Fibonacci <T>* PQ_Fibonacci <T> :: insertNextToMax(PQ_Fibonacci <T>* node) {
+    if (NULL == node) {
+        return;
+    }
     PQ_Fibonacci <T>* maxNext = maxNode->next;
     PQ_Fibonacci <T>* lastInList = node->prev;
-
-/*
-    // Single child
-    if (lastInList == node) {
-        maxNode->next = node;
-        node->prev = maxNode;
-        node->next = maxNext;
-    }
-*/
 
     maxNode->next = node;
     node->prev = maxNode;
@@ -177,24 +171,32 @@ template <typename T>
 PQ_Fibonacci <T>* PQ_Fibonacci <T> :: removeNodeDLL(PQ_Fibonacci <T>* node) {
     PQ_Fibonacci <T>* tempPrev = node->prev;
     PQ_Fibonacci <T>* tempNext = node->next;
-    if (tempPrev) {
-        tempPrev->next = tempNext;
-    }
-    if (tempNext) {
-        tempNext->prev = tempPrev;
-    }
+    tempPrev->next = tempNext;
+    tempNext->prev = tempPrev;
+
     // Update child pointer of parent if necessary
     if (node->parentNode) {
         if (node->parentNode->childNode == node) {
-            node->parentNode->childNode = tempNext;
+            if (tempNext != node) {
+                node->parentNode->childNode = tempNext;
+            }
+            // Only child
+            else {
+                node->parentNode->childNode = NULL;
+            }
         }
     }
+    PQ_Fibonacci <T>* child = node->childNode;
     delete node;
+    return child;
 }
 
 
 template <typename T>
 PQ_Fibonacci <T>* PQ_Fibonacci <T> :: removeNode(PQ_Fibonacci <T>* node) {
+    // Remove node from DLL and get pointer to first child node
+    PQ_Fibonacci <T>* child = removeNodeDLL(node);
+    insertNextToMax(child);
     return NULL;
 }
 
