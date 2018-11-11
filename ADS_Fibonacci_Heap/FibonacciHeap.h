@@ -26,9 +26,9 @@ private:
 
     PQ_Fibonacci <T>* insertNextToMax(PQ_Fibonacci <T>* node);
     PQ_Fibonacci <T>* insertNextToNode(PQ_Fibonacci <T>* node, PQ_Fibonacci <T>* insertNode);
-    PQ_Fibonacci <T>* removeNodeDLL(PQ_Fibonacci <T>* node);
+    void removeNodeDLL(PQ_Fibonacci <T>* node, PQ_Fibonacci <T>** childNode);
     PQ_Fibonacci <T>* oustNode(PQ_Fibonacci <T>* node);
-    PQ_Fibonacci <T>* removeNode(PQ_Fibonacci <T>* node);
+    void removeNode(PQ_Fibonacci <T>* node, PQ_Fibonacci <T>** childNode);
     PQ_Fibonacci <T>* removeMaxNode();
     void updateMaxNode();
     void updateParentPointers(PQ_Fibonacci <T>* firstChild);
@@ -38,21 +38,41 @@ private:
 public:
     static PQ_Fibonacci <T>* maxNode; // Pointer to max node in the heap
     PQ_Fibonacci(T data);
+    PQ_Fibonacci();
+    void insertNode(PQ_Fibonacci <T>* node);
     PQ_Fibonacci <T>* insertItem(T data);
     PQ_Fibonacci <T>* extractMax();
 
-    void dummy();
     void printNode(PQ_Fibonacci <T>* node);
     void printAllNodes();
     void printRecursive(PQ_Fibonacci <T>* firstNode, PQ_Fibonacci <T> * curNode);
     void printBFS(PQ_Fibonacci <T> * curNode);
     PQ_Fibonacci <T>* increaseKey(PQ_Fibonacci <T>* node, T newVal);
+    PQ_Fibonacci <T>* addToKey(PQ_Fibonacci <T>* node, T addVal);
+    T getValue();
 };
 
 template <typename T>
 PQ_Fibonacci <T>* PQ_Fibonacci <T> :: maxNode = NULL;
 
 /* Function definitions */
+template <typename T>
+PQ_Fibonacci <T> :: PQ_Fibonacci() {
+    this->data = 0;
+    this->childCut = false;
+    this->degree = 0;
+    this->childNode = NULL;
+    this->parentNode = NULL;
+    // Point the next and prev pointers to the same node initially
+    this->next = this;
+    this->prev = this;
+
+    // Update maxNode on first item insert
+    if (NULL == maxNode) {
+        maxNode = this;
+    }
+}
+
 template <typename T>
 PQ_Fibonacci <T> :: PQ_Fibonacci(T data) {
     this->data = data;
@@ -134,6 +154,12 @@ void PQ_Fibonacci <T> :: printAllNodes() {
 
 
 template <typename T>
+void PQ_Fibonacci <T> :: insertNode(PQ_Fibonacci <T>* node) {
+    node = insertNextToMax(node);
+    updateMaxNode();
+}
+
+template <typename T>
 PQ_Fibonacci <T>* PQ_Fibonacci <T> :: insertNextToMax(PQ_Fibonacci <T>* node) {
     // Nothing to insert
     if (NULL == node) {
@@ -181,7 +207,7 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: insertNextToNode(PQ_Fibonacci <T>* node, P
 }
 
 template <typename T>
-PQ_Fibonacci <T>* PQ_Fibonacci <T> :: removeNodeDLL(PQ_Fibonacci <T>* node) {
+void PQ_Fibonacci <T> :: removeNodeDLL(PQ_Fibonacci <T>* node, PQ_Fibonacci <T>** childNode) {
     PQ_Fibonacci <T>* tempPrev = node->prev;
     PQ_Fibonacci <T>* tempNext = node->next;
     tempPrev->next = tempNext;
@@ -199,9 +225,10 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: removeNodeDLL(PQ_Fibonacci <T>* node) {
             }
         }
     }
-    PQ_Fibonacci <T>* child = node->childNode;
-    delete node;
-    return child;
+    *childNode = node->childNode;
+    //PQ_Fibonacci <T>* child = node->childNode;
+    //delete node;
+    //return child;
 }
 
 
@@ -220,12 +247,13 @@ void PQ_Fibonacci <T> :: updateParentPointers(PQ_Fibonacci <T>* firstChild) {
 }
 
 template <typename T>
-PQ_Fibonacci <T>* PQ_Fibonacci <T> :: removeNode(PQ_Fibonacci <T>* node) {
+void PQ_Fibonacci <T> :: removeNode(PQ_Fibonacci <T>* node, PQ_Fibonacci <T>** pChild) {
     // Remove node from DLL and get pointer to first child node
-    PQ_Fibonacci <T>* child = removeNodeDLL(node);
-    updateParentPointers(child);
-    insertNextToMax(child);
-    return child;
+    //PQ_Fibonacci <T>* child;
+    removeNodeDLL(node, pChild);
+    updateParentPointers(*pChild);
+    insertNextToMax(*pChild);
+    //return *child;
 }
 
 /*
@@ -256,10 +284,11 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: removeMaxNode() {
     else {
         maxNode = maxNode->childNode;
     }
-    PQ_Fibonacci <T>* child = removeNode(dnode);
+    PQ_Fibonacci <T>* child;
+    removeNode(dnode, &child);
     updateParentPointers(child);
     insertNextToMax(child);
-    return child;
+    return dnode;
 }
 
 
@@ -340,11 +369,15 @@ void PQ_Fibonacci <T> :: combine() {
 
 template <typename T>
 PQ_Fibonacci <T>* PQ_Fibonacci <T> :: extractMax() {
-    removeMaxNode();
+    if (NULL == maxNode) {
+        return NULL;
+    }
+    PQ_Fibonacci <T>* mNode = removeMaxNode();
     updateMaxNode();
     combine();
-    return NULL;
+    return mNode;
 }
+
 
 template <typename T>
 PQ_Fibonacci <T>* PQ_Fibonacci <T> :: increaseKey(PQ_Fibonacci <T>* node, T newVal) {
@@ -386,9 +419,19 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: increaseKey(PQ_Fibonacci <T>* node, T newV
             maxNode = node;
         }
     }
+    return NULL;
 }
 
+template <typename T>
+PQ_Fibonacci <T>* PQ_Fibonacci <T> :: addToKey(PQ_Fibonacci <T>* node, T addVal) {
 
+    T curVal = node->data;
+    return (node->increaseKey(node, curVal+addVal));
+}
 
+template <typename T>
+T PQ_Fibonacci <T> :: getValue() {
+    return this->data;
+}
 
 #endif /* FIBONACCIHEAP_H_ */

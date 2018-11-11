@@ -6,20 +6,20 @@
 #include <iostream>
 #include <iomanip>
 
-
-#define HASH_TABLE     std::unordered_map<std::string, int>
+#define PAIR_KV        std::pair<std::string, PQ_Fibonacci<int>*>
+#define HASH_TABLE     std::unordered_map<std::string, PQ_Fibonacci<int>*>
 
 
 
 class FrequencyCounter{
 private:
-    PQ_Fibonacci<int> *fibpq;
+    PQ_Fibonacci<int>* fibpq;
     //std::unordered_map <std::string, PQ_Fibonacci<int>* > freqMap;
     HASH_TABLE freqMap;
 
 public:
     FrequencyCounter();
-    bool addItem(std::string domain, int count);
+    void addItem(std::string domain, int count);
     void printAllItems();
 };
 
