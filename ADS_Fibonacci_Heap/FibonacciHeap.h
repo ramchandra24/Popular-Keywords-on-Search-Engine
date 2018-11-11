@@ -296,10 +296,18 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: removeMaxNode() {
     }
     // Only node/tree in heap
     else {
+        /* As there are no nodes in the top DLL, there's no need to
+         * remove child nodes and plug them in the top DLL.
+         * Just make the first level DLL as the main DLL and update max node
+         */
         maxNode = maxNode->childNode;
         // Update parent of new child max node to NULL
         maxNode->parentNode = NULL;
+        updateParentPointers(maxNode->next);
+        return dnode;
     }
+    std::cout << "Printing tentative max node " << std::endl;
+    printNode(maxNode);
     PQ_Fibonacci <T>* child;
     removeNode(&dnode, &child);
     printNode(dnode);
