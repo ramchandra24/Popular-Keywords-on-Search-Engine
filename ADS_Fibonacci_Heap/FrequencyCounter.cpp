@@ -71,7 +71,7 @@ void FrequencyCounter :: printPQ() {
 void FrequencyCounter :: printTopItems(int count) {
     PQ_Fibonacci <int>** mNodes = new PQ_Fibonacci <int>* [count];
     std::cout << "Top " << count << " entries : " << std::endl;
-    for (int i=0; i<2; ++i) {
+    for (int i=0; i<count; ++i) {
         mNodes[i] = fibpq->extractMax();
         if (NULL == mNodes[i] && (i < count - 1)) {
             std::cout << "Empty heap" << std::endl;
@@ -89,4 +89,7 @@ void FrequencyCounter :: printTopItems(int count) {
     for(int i=0; i<count; ++i) {
         mNodes[i]->printNode(mNodes[i]);
     }
+
+    std::cout << "printing heap" << std::endl;
+    printPQ();
 }

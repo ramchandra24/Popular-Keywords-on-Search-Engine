@@ -26,9 +26,9 @@ private:
 
     PQ_Fibonacci <T>* insertNextToMax(PQ_Fibonacci <T>* node);
     PQ_Fibonacci <T>* insertNextToNode(PQ_Fibonacci <T>* node, PQ_Fibonacci <T>* insertNode);
-    void removeNodeDLL(PQ_Fibonacci <T>* node, PQ_Fibonacci <T>** childNode);
+    void removeNodeDLL(PQ_Fibonacci <T>** pNode, PQ_Fibonacci <T>** pChild);
     PQ_Fibonacci <T>* oustNode(PQ_Fibonacci <T>* node);
-    void removeNode(PQ_Fibonacci <T>* node, PQ_Fibonacci <T>** childNode);
+    void removeNode(PQ_Fibonacci <T>** pNode, PQ_Fibonacci <T>** pChild);
     PQ_Fibonacci <T>* removeMaxNode();
     void updateMaxNode();
     void updateParentPointers(PQ_Fibonacci <T>* firstChild);
@@ -207,25 +207,34 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: insertNextToNode(PQ_Fibonacci <T>* node, P
 }
 
 template <typename T>
-void PQ_Fibonacci <T> :: removeNodeDLL(PQ_Fibonacci <T>* node, PQ_Fibonacci <T>** childNode) {
-    PQ_Fibonacci <T>* tempPrev = node->prev;
-    PQ_Fibonacci <T>* tempNext = node->next;
+void PQ_Fibonacci <T> :: removeNodeDLL(PQ_Fibonacci <T>** pNode, PQ_Fibonacci <T>** pChild) {
+    PQ_Fibonacci <T>* tempPrev = (*pNode)->prev;
+    PQ_Fibonacci <T>* tempNext = (*pNode)->next;
     tempPrev->next = tempNext;
     tempNext->prev = tempPrev;
 
     // Update child pointer of parent if necessary
-    if (node->parentNode) {
-        if (node->parentNode->childNode == node) {
-            if (tempNext != node) {
-                node->parentNode->childNode = tempNext;
+    if ((*pNode)->parentNode) {
+        if ((*pNode)->parentNode->childNode == (*pNode)) {
+            if (tempNext != (*pNode)) {
+                (*pNode)->parentNode->childNode = tempNext;
             }
             // Only child
             else {
-                node->parentNode->childNode = NULL;
+                (*pNode)->parentNode->childNode = NULL;
             }
         }
     }
-    *childNode = node->childNode;
+    // Store and return the pointer of childnode of node removed
+    *pChild = (*pNode)->childNode;
+
+    // Update data members of node being removed
+    (*pNode)->childCut = false;
+    (*pNode)->childNode = NULL;
+    (*pNode)->parentNode = NULL;
+    (*pNode)->degree = 0;
+    (*pNode)->next = (*pNode)->prev = *pNode;
+
     //PQ_Fibonacci <T>* child = node->childNode;
     //delete node;
     //return child;
@@ -247,10 +256,10 @@ void PQ_Fibonacci <T> :: updateParentPointers(PQ_Fibonacci <T>* firstChild) {
 }
 
 template <typename T>
-void PQ_Fibonacci <T> :: removeNode(PQ_Fibonacci <T>* node, PQ_Fibonacci <T>** pChild) {
+void PQ_Fibonacci <T> :: removeNode(PQ_Fibonacci <T>** pNode, PQ_Fibonacci <T>** pChild) {
     // Remove node from DLL and get pointer to first child node
     //PQ_Fibonacci <T>* child;
-    removeNodeDLL(node, pChild);
+    removeNodeDLL(pNode, pChild);
     updateParentPointers(*pChild);
     insertNextToMax(*pChild);
     //return *child;
@@ -277,15 +286,23 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: removeMaxNode() {
     // If node being deleted is max node
     PQ_Fibonacci <T>* maxNextNode = maxNode->next;
     PQ_Fibonacci <T>* dnode = maxNode;
+    if (NULL == maxNode) {
+        return NULL;
+    }
+
     if (maxNextNode != maxNode) {
+        // Update the max node pointer to point to some node
         maxNode = maxNextNode;
     }
-    // Only node in heap
+    // Only node/tree in heap
     else {
         maxNode = maxNode->childNode;
+        // Update parent of new child max node to NULL
+        maxNode->parentNode = NULL;
     }
     PQ_Fibonacci <T>* child;
-    removeNode(dnode, &child);
+    removeNode(&dnode, &child);
+    printNode(dnode);
     updateParentPointers(child);
     insertNextToMax(child);
     return dnode;
@@ -308,7 +325,7 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: makeSubtree(PQ_Fibonacci <T>* n1, PQ_Fibon
         childN = n1;
     }
     childN = oustNode(childN);
-    printAllNodes();
+    //printAllNodes();
     parentN->degree = 1 + n1->degree + n2->degree;
     PQ_Fibonacci <T>* firstChild = parentN->childNode;
     parentN->childNode = insertNextToNode(childN, firstChild);
@@ -334,6 +351,7 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: oustNode(PQ_Fibonacci <T>* node) {
             }
         }
     }
+    node->parentNode = NULL;
     node->next = node->prev = node;
     return node;
 }
@@ -351,7 +369,7 @@ void PQ_Fibonacci <T> :: combine() {
     bool endFlag = true;
     do {
         if (degreeMap.end() != degreeMap.find(node->degree)) {
-            //std::cout << "found degree : " << node->degree << " " << node->data << std::endl;
+            std::cout << "found degree : " << node->degree << " " << node->data << std::endl;
             exNode = degreeMap.at(node->degree);
             degreeMap.erase(node->degree);
             node = makeSubtree(node, exNode);
@@ -359,7 +377,7 @@ void PQ_Fibonacci <T> :: combine() {
         }
         else {
             degreeMap[node->degree] = node;
-            //std::cout << "finding degree : " << node->degree << " " << node->data << std::endl;
+            std::cout << "finding degree : " << node->degree << " " << node->data << std::endl;
             node = node->next;
             endFlag = true;
         }

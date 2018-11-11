@@ -6,9 +6,9 @@
 #include <iostream>
 #include <iomanip>
 
-#define PAIR_KV        std::pair<std::string, PQ_Fibonacci<int>*>
+#define PAIR_KV        std::make_pair<std::string, PQ_Fibonacci<int>*>
 #define HASH_TABLE     std::unordered_map<std::string, PQ_Fibonacci<int>*>
-
+#define PQ             PQ_Fibonacci<int>
 
 
 class FrequencyCounter{
@@ -21,6 +21,8 @@ public:
     FrequencyCounter();
     void addItem(std::string domain, int count);
     void printAllItems();
+    void printPQ();
+    void printTopItems(int count);
 };
 
 
