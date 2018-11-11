@@ -50,6 +50,7 @@ public:
     PQ_Fibonacci <T>* increaseKey(PQ_Fibonacci <T>* node, T newVal);
     PQ_Fibonacci <T>* addToKey(PQ_Fibonacci <T>* node, T addVal);
     T getValue();
+    void setDefaultValues(PQ_Fibonacci <T>** pNode);
 };
 
 template <typename T>
@@ -156,11 +157,19 @@ void PQ_Fibonacci <T> :: printAllNodes() {
 template <typename T>
 void PQ_Fibonacci <T> :: insertNode(PQ_Fibonacci <T>* node) {
     node = insertNextToMax(node);
-    updateMaxNode();
+    // Update maxNode
+    if ((NULL == maxNode) || (node->data > maxNode->data)) {
+        maxNode = node;
+    }
 }
 
 template <typename T>
 PQ_Fibonacci <T>* PQ_Fibonacci <T> :: insertNextToMax(PQ_Fibonacci <T>* node) {
+    // No max
+    if (NULL == maxNode) {
+        maxNode = node;
+        return node;
+    }
     // Nothing to insert
     if (NULL == node) {
         return NULL;
@@ -229,11 +238,7 @@ void PQ_Fibonacci <T> :: removeNodeDLL(PQ_Fibonacci <T>** pNode, PQ_Fibonacci <T
     *pChild = (*pNode)->childNode;
 
     // Update data members of node being removed
-    (*pNode)->childCut = false;
-    (*pNode)->childNode = NULL;
-    (*pNode)->parentNode = NULL;
-    (*pNode)->degree = 0;
-    (*pNode)->next = (*pNode)->prev = *pNode;
+    setDefaultValues(pNode);
 
     //PQ_Fibonacci <T>* child = node->childNode;
     //delete node;
@@ -282,6 +287,16 @@ void PQ_Fibonacci <T> :: updateMaxNode() {
 }
 
 template <typename T>
+void PQ_Fibonacci <T> :: setDefaultValues(PQ_Fibonacci <T>** pNode) {
+    // Update data members of node being removed
+    (*pNode)->childCut = false;
+    (*pNode)->childNode = NULL;
+    (*pNode)->parentNode = NULL;
+    (*pNode)->degree = 0;
+    (*pNode)->next = (*pNode)->prev = *pNode;
+}
+
+template <typename T>
 PQ_Fibonacci <T>* PQ_Fibonacci <T> :: removeMaxNode() {
     // If node being deleted is max node
     PQ_Fibonacci <T>* maxNextNode = maxNode->next;
@@ -304,13 +319,13 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: removeMaxNode() {
         // Update parent of new child max node to NULL
         maxNode->parentNode = NULL;
         updateParentPointers(maxNode->next);
+        setDefaultValues(&dnode);
         return dnode;
     }
     std::cout << "Printing tentative max node " << std::endl;
     printNode(maxNode);
     PQ_Fibonacci <T>* child;
     removeNode(&dnode, &child);
-    printNode(dnode);
     updateParentPointers(child);
     insertNextToMax(child);
     return dnode;
