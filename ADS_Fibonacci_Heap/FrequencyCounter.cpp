@@ -49,14 +49,14 @@ void FrequencyCounter :: addItem(std::string domain, int count) {
         freqMap[domain]->addToKey(freqMap[domain], count);
     }
     else {
-        PQ_Fibonacci <int>* node;
+        PQ_Fibonacci<int>* node;
 
         if (NULL == fibpq) {
-            node = new PQ_Fibonacci <int>(count);
+            node = new PQ_Fibonacci<int>(count, domain);
             fibpq = node;
         }
         else {
-            node = fibpq->insertItem(count);
+            node = fibpq->insertItem(count, domain);
         }
         freqMap[domain] = node;
     }
@@ -70,27 +70,38 @@ void FrequencyCounter :: printPQ() {
 
 void FrequencyCounter :: printTopItems(int count) {
     PQ_Fibonacci <int>** mNodes = new PQ_Fibonacci <int>* [count];
-    std::cout << "Top " << count << " entries : " << std::endl;
     for (int i=0; i<count; ++i) {
-        mNodes[i] = fibpq->extractMax();
-        if (NULL == mNodes[i] && (i < count - 1)) {
+        mNodes[i] = NULL;
+    }
+    //std::cout << "Top " << count << " entries : " << std::endl;
+    for (int i=0; i<count; ++i) {
+        // fibpq->printAllNodes();
+        fibpq = fibpq->extractMax(&mNodes[i]);
+        if (NULL == mNodes[i]) {
             std::cout << "Empty heap" << std::endl;
         }
-        std::cout << mNodes[i]->getValue() << std::endl;
+        else {
+            //mNodes[i]->printNode(mNodes[i]);
+        }
+        //std::cout << mNodes[i]->getValue() << std::endl;
         //fibpq->printAllNodes();
     }
-#if 0
-    std::cout << "Top " << count << " nodes : " << std::endl;
-    for(int i=0; i<count; ++i) {
-        mNodes[i]->printNode(mNodes[i]);
-    }
-#endif
-    std::cout << "Top " << count << " nodes : " << std::endl;
-    for(int i=0; i<count; ++i) {
-        mNodes[i]->printNode(mNodes[i]);
-        fibpq->insertNode(mNodes[i]);
-    }
 
-    std::cout << "printing heap" << std::endl;
-    printPQ();
+    //std::cout << "Top " << count << " nodes : " << std::endl;
+    //std::cout << fibpq << std::endl;
+    //fibpq->printNode(fibpq);
+
+    for(int i=0; i<count; ++i) {
+        //std::cout << "printing node" << std::endl;
+        //mNodes[i]->printNode(mNodes[i]);
+        if (NULL != mNodes[i]) {
+            //mNodes[i]->printNode(mNodes[i]);
+            std::cout << mNodes[i]->getDesc() << std::endl;
+            //fibpq->printAllNodes();
+            fibpq->insertNode(mNodes[i]);
+        }
+        else {
+            std::cout << "Empty node" << std::endl;
+        }
+    }
 }

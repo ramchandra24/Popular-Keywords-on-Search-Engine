@@ -10,6 +10,7 @@ template <typename T>
 class PQ_Fibonacci {
 private:
     T data;
+    std::string desc; // Description of data - Domain name to be stored here
     unsigned int degree; // Number of nodes rooted at this node
     bool childCut;
     PQ_Fibonacci <T>* childNode; // Pointer to one of the child nodes
@@ -21,7 +22,7 @@ private:
 
 
 /* Private function declarations */
-    PQ_Fibonacci <T>* newNode(PQ_Fibonacci <T>* maxPQ, T data);
+    PQ_Fibonacci <T>* newNode(PQ_Fibonacci <T>* maxPQ, T data, std::string desc);
     void combine();
 
     PQ_Fibonacci <T>* insertNextToMax(PQ_Fibonacci <T>* node);
@@ -37,11 +38,11 @@ private:
 /* Public function declarations */
 public:
     static PQ_Fibonacci <T>* maxNode; // Pointer to max node in the heap
-    PQ_Fibonacci(T data);
+    PQ_Fibonacci(T data, std::string desc);
     PQ_Fibonacci();
     void insertNode(PQ_Fibonacci <T>* node);
-    PQ_Fibonacci <T>* insertItem(T data);
-    PQ_Fibonacci <T>* extractMax();
+    PQ_Fibonacci <T>* insertItem(T data, std::string desc);
+    PQ_Fibonacci <T>* extractMax(PQ_Fibonacci <T>** mNode);
 
     void printNode(PQ_Fibonacci <T>* node);
     void printAllNodes();
@@ -50,6 +51,7 @@ public:
     PQ_Fibonacci <T>* increaseKey(PQ_Fibonacci <T>* node, T newVal);
     PQ_Fibonacci <T>* addToKey(PQ_Fibonacci <T>* node, T addVal);
     T getValue();
+    std::string getDesc();
     void setDefaultValues(PQ_Fibonacci <T>** pNode);
 };
 
@@ -75,8 +77,9 @@ PQ_Fibonacci <T> :: PQ_Fibonacci() {
 }
 
 template <typename T>
-PQ_Fibonacci <T> :: PQ_Fibonacci(T data) {
+PQ_Fibonacci <T> :: PQ_Fibonacci(T data, std::string desc) {
     this->data = data;
+    this->desc = desc;
     this->childCut = false;
     this->degree = 0;
     this->childNode = NULL;
@@ -92,8 +95,8 @@ PQ_Fibonacci <T> :: PQ_Fibonacci(T data) {
 }
 
 template <typename T>
-PQ_Fibonacci <T>* PQ_Fibonacci <T> :: newNode(PQ_Fibonacci <T>* maxPQ, T data) {
-    PQ_Fibonacci <T>* node = new PQ_Fibonacci <T>(data);
+PQ_Fibonacci <T>* PQ_Fibonacci <T> :: newNode(PQ_Fibonacci <T>* maxPQ, T data, std::string desc) {
+    PQ_Fibonacci <T>* node = new PQ_Fibonacci <T>(data, desc);
 
     // Insert the newly added element next to max element
     node = insertNextToMax(node);
@@ -106,8 +109,8 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: newNode(PQ_Fibonacci <T>* maxPQ, T data) {
 
 
 template <typename T>
-PQ_Fibonacci <T>* PQ_Fibonacci <T> :: insertItem(T data) {
-    PQ_Fibonacci <T>* node = newNode(this, data);
+PQ_Fibonacci <T>* PQ_Fibonacci <T> :: insertItem(T data, std::string desc) {
+    PQ_Fibonacci <T>* node = newNode(this, data, desc);
     return node;
 }
 
@@ -242,6 +245,7 @@ void PQ_Fibonacci <T> :: removeNodeDLL(PQ_Fibonacci <T>** pNode, PQ_Fibonacci <T
 
     // Update data members of node being removed
     setDefaultValues(pNode);
+    (*pNode)->childNode = NULL;
 
     //PQ_Fibonacci <T>* child = node->childNode;
     //delete node;
@@ -284,6 +288,11 @@ void PQ_Fibonacci <T> :: updateMaxNode() {
     if (NULL == maxNode) {
         return;
     }
+    // Only one node present in the heap
+    if (maxNode->next == maxNode) {
+        maxNode = node;
+        return;
+    }
     do {
         if (maxNode->data < node->data) {
             maxNode = node;
@@ -296,7 +305,7 @@ template <typename T>
 void PQ_Fibonacci <T> :: setDefaultValues(PQ_Fibonacci <T>** pNode) {
     // Update data members of node being removed
     (*pNode)->childCut = false;
-    (*pNode)->childNode = NULL;
+    //(*pNode)->childNode = NULL;
     (*pNode)->parentNode = NULL;
     (*pNode)->degree = 0;
     (*pNode)->next = (*pNode)->prev = *pNode;
@@ -324,7 +333,7 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: removeMaxNode() {
         maxNode = maxNode->childNode;
         // Removing only node present in the heap
         if (NULL == maxNode) {
-            return maxNode;
+            return dnode;
         }
         // Update parent of new child max node to NULL
         maxNode->parentNode = NULL;
@@ -347,7 +356,7 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: makeSubtree(PQ_Fibonacci <T>* n1, PQ_Fibon
     PQ_Fibonacci <T>* parentN;
     PQ_Fibonacci <T>* childN;
 
-    std::cout << "makesubtree : " << n1->data << " " << n2->data << std::endl;
+    //std::cout << "makesubtree : " << n1->data << " " << n2->data << std::endl;
     if (n1->data > n2->data) {
         parentN = n1;
         childN = n2;
@@ -401,7 +410,7 @@ void PQ_Fibonacci <T> :: combine() {
     bool endFlag = true;
     do {
         if (degreeMap.end() != degreeMap.find(node->degree)) {
-            std::cout << "found degree : " << node->degree << " " << node->data << std::endl;
+            //std::cout << "found degree : " << node->degree << " " << node->data << std::endl;
             exNode = degreeMap.at(node->degree);
             degreeMap.erase(node->degree);
             node = makeSubtree(node, exNode);
@@ -409,7 +418,7 @@ void PQ_Fibonacci <T> :: combine() {
         }
         else {
             degreeMap[node->degree] = node;
-            std::cout << "finding degree : " << node->degree << " " << node->data << std::endl;
+            //std::cout << "finding degree : " << node->degree << " " << node->data << std::endl;
             node = node->next;
             endFlag = true;
         }
@@ -418,14 +427,17 @@ void PQ_Fibonacci <T> :: combine() {
 
 
 template <typename T>
-PQ_Fibonacci <T>* PQ_Fibonacci <T> :: extractMax() {
+PQ_Fibonacci <T>* PQ_Fibonacci <T> :: extractMax(PQ_Fibonacci <T>** mNode) {
     if (NULL == maxNode) {
+        *mNode = NULL;
         return NULL;
     }
-    PQ_Fibonacci <T>* mNode = removeMaxNode();
+    //PQ_Fibonacci <T>* mNode = removeMaxNode();
+    *mNode = removeMaxNode();
     updateMaxNode();
     combine();
-    return mNode;
+    // maxNode will be pointing to the new max in the heap by now
+    return maxNode;
 }
 
 
@@ -491,6 +503,11 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: addToKey(PQ_Fibonacci <T>* node, T addVal)
 template <typename T>
 T PQ_Fibonacci <T> :: getValue() {
     return this->data;
+}
+
+template <typename T>
+std::string PQ_Fibonacci <T> :: getDesc() {
+    return this->desc;
 }
 
 #endif /* FIBONACCIHEAP_H_ */
