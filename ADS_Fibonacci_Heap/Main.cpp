@@ -7,30 +7,18 @@
 
 using namespace std;
 
-int main() {
-    FrequencyCounter fCounter;
-    fCounter.addItem("facebook", 5);
+int main(int argc, char* argv[]) {
+    FrequencyCounter fCounter("input.txt", "output_file.txt");
+    fCounter.analyze();
 
-    fCounter.addItem("google", 3);
-
-    fCounter.addItem("amazon", 10);
-#if 0
-    fCounter.addItem("yahoo", 2);
-    fCounter.addItem("gmail", 4);
-
-    fCounter.addItem("youtube", 2);
-    fCounter.addItem("playing", 6);
-    fCounter.addItem("news", 8);
-    fCounter.addItem("ufl", 12);
-    fCounter.printAllItems();
-#endif
+//#endif
     //fCounter.printPQ();
     //fCounter.addItem("google", 71);
     //fCounter.printAllItems();
 
     //fCounter.printAllItems();
     //fCounter.printPQ();
-    fCounter.printTopItems(3);
+    //fCounter.printTopItems(12);
     //fCounter.printPQ();
     //fCounter.printPQ();
     //fCounter.addItem("youtube", 23);

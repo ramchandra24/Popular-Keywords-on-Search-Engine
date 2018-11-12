@@ -1,43 +1,22 @@
 #include "FrequencyCounter.h"
 
-FrequencyCounter :: FrequencyCounter() {
+FrequencyCounter :: FrequencyCounter(std::string ipPath, std::string opPath) {
     fibpq = NULL;
-#if 0
-    PQ_Fibonacci <int>* fibpq = new PQ_Fibonacci <int>(85);
+    this->ipFile.open(ipPath);
+    this->opFile.open(opPath);
+    if ((!this->ipFile.good()) || (!this->opFile.good())) {
+        std::cout << "Error opening file" << std::endl;
+    }
+}
 
-    fibpq->insertItem(50);
-    fibpq->insertItem(65);
-    fibpq->insertItem(60);
-    PQ_Fibonacci <int>* it = fibpq->insertItem(50);
-    //it->increaseKey(it, 155);
-/*    fibpq->insertItem(35);
-    fibpq->insertItem(20);
-    fibpq->insertItem(960);
-    fibpq->insertItem(95);
-    fibpq->insertItem(10);*/
-    //fibpq->printAllNodes();
-
-    //fibpq->insertItem(90);
-    //fibpq->printAllNodes();
-
-    fibpq->extractMax();
-    fibpq->printAllNodes();
-    std::cout << "increase key start " << std::endl;
-    fibpq->increaseKey(it, 155);
-    std::cout << "after increase key " << std::endl;
-    fibpq->printAllNodes();
-    // Map to store (PQ node -> Keyword Frequency) mapping
-    //unordered_map <int, PQ_Fibonacci <T>*> hmap;
-#endif
-
+FrequencyCounter :: ~FrequencyCounter() {
+    this->ipFile.close();
+    this->opFile.close();
 }
 
 void FrequencyCounter :: printAllItems() {
     HASH_TABLE::iterator it;
     std::cout << "Number of items in table : " << freqMap.size() << std::endl;
-    /*for(it = freqMap.begin(); it != freqMap.end(); ++it) {
-        std::cout << std::setw(16) << std::left << it->first << " : " << it->second << std::endl;
-    }*/
     for(it = freqMap.begin(); it != freqMap.end(); ++it) {
         std::cout << std::setw(16) << std::left << it->first << " : " << it->second->getValue() << std::endl;
     }
@@ -73,35 +52,56 @@ void FrequencyCounter :: printTopItems(int count) {
     for (int i=0; i<count; ++i) {
         mNodes[i] = NULL;
     }
-    //std::cout << "Top " << count << " entries : " << std::endl;
+    // Extract 'count' number of nodes from the heap
     for (int i=0; i<count; ++i) {
-        // fibpq->printAllNodes();
         fibpq = fibpq->extractMax(&mNodes[i]);
-        if (NULL == mNodes[i]) {
-            std::cout << "Empty heap" << std::endl;
-        }
-        else {
-            //mNodes[i]->printNode(mNodes[i]);
-        }
-        //std::cout << mNodes[i]->getValue() << std::endl;
-        //fibpq->printAllNodes();
     }
-
-    //std::cout << "Top " << count << " nodes : " << std::endl;
-    //std::cout << fibpq << std::endl;
-    //fibpq->printNode(fibpq);
-
+    std::stringstream oss;
+    bool firstString = true;
     for(int i=0; i<count; ++i) {
-        //std::cout << "printing node" << std::endl;
-        //mNodes[i]->printNode(mNodes[i]);
+
         if (NULL != mNodes[i]) {
-            //mNodes[i]->printNode(mNodes[i]);
             std::cout << mNodes[i]->getDesc() << std::endl;
-            //fibpq->printAllNodes();
+            if (!firstString) {
+                oss << ",";
+            }
+            firstString = false;
+            oss << mNodes[i]->getDesc();
+            // Re-insert the nodes extracted earlier into the heap
             fibpq->insertNode(mNodes[i]);
         }
-        else {
-            std::cout << "Empty node" << std::endl;
+    }
+    outputToFile(oss.str());
+}
+
+void FrequencyCounter :: outputToFile(std::string opString) {
+    opFile << opString << std::endl;
+}
+
+
+void FrequencyCounter :: analyze() {
+    std::string line;
+
+    while (std::getline(ipFile, line))
+    {
+        std::stringstream iss(line);
+        int count;
+        std::string domain;
+        // breaking condition
+        if ("stop" == line) {
+            break;
         }
+        if ('$' == line[0]) {
+            iss >> domain;
+            iss >> count;
+
+            addItem(&domain[1], count);
+        }
+        else {
+            iss >> count;
+
+            printTopItems(count);
+        }
+
     }
 }

@@ -1,0 +1,13 @@
+$facebook 5
+$google 3
+$amazon 10
+$yahoo 2
+2
+stop
+$gmail 4
+$youtube 2
+$playing 6
+$news 8
+$ufl 12
+5
+stop
