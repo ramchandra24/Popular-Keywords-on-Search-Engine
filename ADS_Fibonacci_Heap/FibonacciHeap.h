@@ -150,6 +150,9 @@ void PQ_Fibonacci <T>:: printRecursive(PQ_Fibonacci <T>* firstNode, PQ_Fibonacci
 
 template <typename T>
 void PQ_Fibonacci <T> :: printAllNodes() {
+    if (NULL == maxNode) {
+        std::cout << "Heap is empty" << std::endl;
+    }
     printRecursive(maxNode, maxNode);
 }
 
@@ -278,6 +281,9 @@ template <typename T>
 void PQ_Fibonacci <T> :: updateMaxNode() {
     PQ_Fibonacci <T>* node = maxNode;
     PQ_Fibonacci <T>* firstNode = maxNode;
+    if (NULL == maxNode) {
+        return;
+    }
     do {
         if (maxNode->data < node->data) {
             maxNode = node;
@@ -316,14 +322,17 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: removeMaxNode() {
          * Just make the first level DLL as the main DLL and update max node
          */
         maxNode = maxNode->childNode;
+        // Removing only node present in the heap
+        if (NULL == maxNode) {
+            return maxNode;
+        }
         // Update parent of new child max node to NULL
         maxNode->parentNode = NULL;
         updateParentPointers(maxNode->next);
         setDefaultValues(&dnode);
+
         return dnode;
     }
-    std::cout << "Printing tentative max node " << std::endl;
-    printNode(maxNode);
     PQ_Fibonacci <T>* child;
     removeNode(&dnode, &child);
     updateParentPointers(child);
@@ -430,13 +439,16 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: increaseKey(PQ_Fibonacci <T>* node, T newV
         if (pnode->data < node->data) {
             node = oustNode(node);
             insertNextToMax(node);
-            printAllNodes();
+            // Update maxNode if necessary
             if (maxNode->data < node->data) {
                 maxNode = node;
             }
 
             // Time for ChildCut action
             while (pnode->childCut) {
+                /* Find grandparent and move up until root level
+                 * adding all the below subtrees to root level tree
+                 */
                 PQ_Fibonacci <T>* ppnode = pnode->parentNode;
                 pnode = oustNode(pnode);
                 pnode->childCut = false;
@@ -446,12 +458,18 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: increaseKey(PQ_Fibonacci <T>* node, T newV
                 node = pnode;
                 pnode = ppnode;
             }
-            pnode->childCut = true;
+            // Update childCut of the parent
+            // If we have reached root level tree, no need to update childCut
+            if (NULL != pnode->parentNode) {
+                pnode->childCut = true;
+            }
+            // Update degree values of all parent nodes above cut
             while(pnode) {
                 pnode->degree -= node->degree + 1;
                 pnode = pnode->parentNode;
             }
         }
+        // else - Nothing to be done
     }
     // Top level node, just update value and max pointer if necessary
     else {

@@ -88,6 +88,7 @@ void FrequencyCounter :: printTopItems(int count) {
     std::cout << "Top " << count << " nodes : " << std::endl;
     for(int i=0; i<count; ++i) {
         mNodes[i]->printNode(mNodes[i]);
+        fibpq->insertNode(mNodes[i]);
     }
 
     std::cout << "printing heap" << std::endl;
