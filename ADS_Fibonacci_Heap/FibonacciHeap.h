@@ -189,7 +189,6 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: insertNextToMax(PQ_Fibonacci <T>* node) {
     lastInList->next = maxNext;
     maxNext->prev = lastInList;
     return node;
-    //return insertNextToNode(maxNode, node);
 }
 
 template <typename T>
@@ -201,7 +200,6 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: insertNextToNode(PQ_Fibonacci <T>* node, P
     if (NULL == insertNode) {
         return node;
     }
-    //std::cout << "new child : " << node->data << " old child : " << insertNode->data << std::endl;
     PQ_Fibonacci <T>* nodeNext = node->next;
     PQ_Fibonacci <T>* lastInList = insertNode->prev;
 
@@ -209,14 +207,6 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: insertNextToNode(PQ_Fibonacci <T>* node, P
     insertNode->prev = node;
     lastInList->next = nodeNext;
     nodeNext->prev = lastInList;
-
-/*
-    PQ_Fibonacci <T>* temp = node;
-    do {
-        std::cout << temp->data << std::endl;
-        temp = temp->next;
-    } while (temp != node);
-*/
 
     return node;
 }
@@ -367,7 +357,7 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: makeSubtree(PQ_Fibonacci <T>* n1, PQ_Fibon
     }
     childN = oustNode(childN);
     //printAllNodes();
-    parentN->degree = 1 + n1->degree + n2->degree;
+    parentN->degree = 1 + parentN->degree;//n1->degree + n2->degree;
     PQ_Fibonacci <T>* firstChild = parentN->childNode;
     parentN->childNode = insertNextToNode(childN, firstChild);
     childN->parentNode = parentN;
@@ -393,6 +383,7 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: oustNode(PQ_Fibonacci <T>* node) {
         }
     }
     node->parentNode = NULL;
+    node->childCut = false;
     node->next = node->prev = node;
     return node;
 }
@@ -463,8 +454,7 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: increaseKey(PQ_Fibonacci <T>* node, T newV
                  */
                 PQ_Fibonacci <T>* ppnode = pnode->parentNode;
                 pnode = oustNode(pnode);
-                pnode->childCut = false;
-                pnode->degree -= node->degree + 1;
+                pnode->degree -= 1 ;//+ node->degree;
                 // No update to max node needed as these values are definitely less
                 insertNextToMax(pnode);
                 node = pnode;
@@ -475,11 +465,13 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: increaseKey(PQ_Fibonacci <T>* node, T newV
             if (NULL != pnode->parentNode) {
                 pnode->childCut = true;
             }
+            pnode->degree -= 1;
             // Update degree values of all parent nodes above cut
-            while(pnode) {
-                pnode->degree -= node->degree + 1;
+            /*while(pnode) {
+                pnode->degree -= 1; // + node->degree;
                 pnode = pnode->parentNode;
             }
+            */
         }
         // else - Nothing to be done
     }
@@ -490,7 +482,7 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: increaseKey(PQ_Fibonacci <T>* node, T newV
             maxNode = node;
         }
     }
-    return NULL;
+    return maxNode;
 }
 
 template <typename T>
