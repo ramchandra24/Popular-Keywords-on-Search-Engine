@@ -31,9 +31,12 @@ private:
     PQ_Fibonacci <T>* oustNode(PQ_Fibonacci <T>* node);
     void removeNode(PQ_Fibonacci <T>** pNode, PQ_Fibonacci <T>** pChild);
     PQ_Fibonacci <T>* removeMaxNode();
-    void updateMaxNode();
+
     void updateParentPointers(PQ_Fibonacci <T>* firstChild);
     PQ_Fibonacci <T>* makeSubtree(PQ_Fibonacci <T>* n1, PQ_Fibonacci <T>* n2);
+    void printRecursive(PQ_Fibonacci <T>* firstNode, PQ_Fibonacci <T> * curNode);
+    void printNodeDescRecursive(PQ_Fibonacci <T>* firstNode, PQ_Fibonacci <T> * curNode);
+    void updateMaxNode();
 
 /* Public function declarations */
 public:
@@ -45,14 +48,16 @@ public:
     PQ_Fibonacci <T>* extractMax(PQ_Fibonacci <T>** mNode);
 
     void printNode(PQ_Fibonacci <T>* node);
+    void printNodeDesc(PQ_Fibonacci <T>* node);
     void printAllNodes();
-    void printRecursive(PQ_Fibonacci <T>* firstNode, PQ_Fibonacci <T> * curNode);
+    void printAllNodeDescs();
     void printBFS(PQ_Fibonacci <T> * curNode);
     PQ_Fibonacci <T>* increaseKey(PQ_Fibonacci <T>* node, T newVal);
     PQ_Fibonacci <T>* addToKey(PQ_Fibonacci <T>* node, T addVal);
     T getValue();
     std::string getDesc();
     void setDefaultValues(PQ_Fibonacci <T>** pNode);
+    void makeMax();
 };
 
 template <typename T>
@@ -114,6 +119,18 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: insertItem(T data, std::string desc) {
     return node;
 }
 
+template <typename T>
+void PQ_Fibonacci <T> :: makeMax() {
+    maxNode = this;
+}
+
+template <typename T>
+void PQ_Fibonacci <T> :: printNodeDesc(PQ_Fibonacci <T>* node) {
+    if (maxNode == node) {
+        std::cout << "**Max node**"<< std::endl;
+    }
+    std::cout << std::setw(20) << std::left << node->getDesc() << std::endl;
+}
 
 template <typename T>
 void PQ_Fibonacci <T> :: printNode(PQ_Fibonacci <T>* node) {
@@ -150,6 +167,28 @@ void PQ_Fibonacci <T>:: printRecursive(PQ_Fibonacci <T>* firstNode, PQ_Fibonacci
     printRecursive(firstNode, curNode->next);
 }
 
+template <typename T>
+void PQ_Fibonacci <T>:: printNodeDescRecursive(PQ_Fibonacci <T>* firstNode, PQ_Fibonacci <T> * curNode) {
+    if (NULL == curNode) {
+        return;
+    }
+    printNodeDesc(curNode);
+    printNodeDescRecursive(curNode->childNode, curNode->childNode);
+    // If all nodes in the current level DLL have been printed, return to previous level
+    if (firstNode == curNode->next) {
+        return;
+    }
+    printNodeDescRecursive(firstNode, curNode->next);
+}
+
+template <typename T>
+void PQ_Fibonacci <T> :: printAllNodeDescs() {
+    std::cout << std::endl << "=====Nodes in Fib heap=====" << std::endl;
+    if (NULL == maxNode) {
+        std::cout << "Heap is empty" << std::endl;
+    }
+    printNodeDescRecursive(maxNode, maxNode);
+}
 
 template <typename T>
 void PQ_Fibonacci <T> :: printAllNodes() {
@@ -336,6 +375,7 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: removeMaxNode() {
     removeNode(&dnode, &child);
     updateParentPointers(child);
     insertNextToMax(child);
+    setDefaultValues(&dnode);
     return dnode;
 }
 
@@ -401,16 +441,24 @@ void PQ_Fibonacci <T> :: combine() {
     bool endFlag = true;
     do {
         if (degreeMap.end() != degreeMap.find(node->degree)) {
-            //std::cout << "found degree : " << node->degree << " " << node->data << std::endl;
+            std::cout << "found degree : " << node->degree << " " << node->data << std::endl;
             exNode = degreeMap.at(node->degree);
+            if (node == exNode) {
+                break;
+            }
             degreeMap.erase(node->degree);
             node = makeSubtree(node, exNode);
+            firstNode = node;
             endFlag = false;
         }
         else {
             degreeMap[node->degree] = node;
-            //std::cout << "finding degree : " << node->degree << " " << node->data << std::endl;
+            std::cout << "finding degree : " << node->degree << " " << node->data << std::endl;
+            //firstNode = node;
             node = node->next;
+            //if (firstNode == node) {
+            //   break;
+            //}
             endFlag = true;
         }
     } while ( (node != firstNode) || (!endFlag) );
@@ -423,10 +471,14 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: extractMax(PQ_Fibonacci <T>** mNode) {
         *mNode = NULL;
         return NULL;
     }
-    //PQ_Fibonacci <T>* mNode = removeMaxNode();
+
+    std::cout << "before removemax" << std::endl;
     *mNode = removeMaxNode();
+    std::cout << "after removemax" << std::endl;
     updateMaxNode();
+    std::cout << "after updatemax" << std::endl;
     combine();
+    std::cout << "after combine" << std::endl;
     // maxNode will be pointing to the new max in the heap by now
     return maxNode;
 }
@@ -436,7 +488,7 @@ template <typename T>
 PQ_Fibonacci <T>* PQ_Fibonacci <T> :: increaseKey(PQ_Fibonacci <T>* node, T newVal) {
 
     PQ_Fibonacci <T>* pnode = node->parentNode;
-    if (pnode) {
+    if (NULL != pnode) {
         node->data = newVal;
         // Parent smaller, possible childcut now
         if (pnode->data < node->data) {
@@ -466,19 +518,13 @@ PQ_Fibonacci <T>* PQ_Fibonacci <T> :: increaseKey(PQ_Fibonacci <T>* node, T newV
                 pnode->childCut = true;
             }
             pnode->degree -= 1;
-            // Update degree values of all parent nodes above cut
-            /*while(pnode) {
-                pnode->degree -= 1; // + node->degree;
-                pnode = pnode->parentNode;
-            }
-            */
         }
         // else - Nothing to be done
     }
     // Top level node, just update value and max pointer if necessary
     else {
         node->data = newVal;
-        if (maxNode->data < node->data) {
+        if ((maxNode == NULL) || (maxNode->data < node->data)) {
             maxNode = node;
         }
     }

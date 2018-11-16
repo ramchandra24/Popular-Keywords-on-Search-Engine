@@ -22,18 +22,16 @@ void FrequencyCounter :: printAllItems() {
     }
 }
 
-void FrequencyCounter :: addItem(std::string domain, int count) {
 
+void FrequencyCounter :: addItem(std::string domain, int count) {
+    //std::cout << domain << " : " << count << std::endl;
     if (freqMap.end() != freqMap.find(domain)) {
-        std::cout << "before inc key" << std::endl;
-        fibpq->printAllNodes();
-        freqMap[domain]->addToKey(freqMap[domain], count);
-        std::cout << "after inc key" << std::endl;
-        fibpq->printAllNodes();
+        std::cout << "found " << domain << std::endl;
+        fibpq = freqMap[domain]->addToKey(freqMap[domain], count);
     }
     else {
         PQ_Fibonacci<int>* node;
-
+        std::cout << "new node " << domain << std::endl;
         if (NULL == fibpq) {
             node = new PQ_Fibonacci<int>(count, domain);
             fibpq = node;
@@ -46,24 +44,29 @@ void FrequencyCounter :: addItem(std::string domain, int count) {
 }
 
 void FrequencyCounter :: printPQ() {
-    if (fibpq) {
+    if (NULL != fibpq) {
         fibpq->printAllNodes();
     }
 }
 
 void FrequencyCounter :: printTopItems(int count) {
+    printAllItems();
+    std::cout << "Get top : " << count << std::endl;
     PQ_Fibonacci <int>** mNodes = new PQ_Fibonacci <int>* [count];
     for (int i=0; i<count; ++i) {
         mNodes[i] = NULL;
     }
     // Extract 'count' number of nodes from the heap
-    //fibpq->printAllNodes();
     for (int i=0; i<count; ++i) {
         std::cout << "Before extract max" << std::endl;
-        fibpq->printAllNodes();
-        fibpq = fibpq->extractMax(&mNodes[i]);
-        std::cout << "After extract max" << std::endl;
-        fibpq->printAllNodes();
+        //fibpq->printAllNodes();
+        //fibpq->printAllNodeDescs();
+        if (NULL != fibpq) {
+            //std::cout << fibpq->getDesc() << std::endl;
+            fibpq = fibpq->extractMax(&mNodes[i]);
+        }
+        std::cout << "After extract max : " << mNodes[i]->getDesc() << std::endl;
+        //std::cout << fibpq << std::endl;
     }
     std::stringstream oss;
     bool firstString = true;
@@ -77,7 +80,13 @@ void FrequencyCounter :: printTopItems(int count) {
             firstString = false;
             oss << mNodes[i]->getDesc();
             // Re-insert the nodes extracted earlier into the heap
-            fibpq->insertNode(mNodes[i]);
+            if (NULL != fibpq) {
+                fibpq->insertNode(mNodes[i]);
+            }
+            else {
+                 fibpq = mNodes[i];
+                 fibpq->makeMax();
+            }
         }
     }
     outputToFile(oss.str());
@@ -90,23 +99,28 @@ void FrequencyCounter :: outputToFile(std::string opString) {
 
 void FrequencyCounter :: analyze() {
     std::string line;
-
-    while (std::getline(ipFile, line))
+    // Getline from input file until the delimiter - \n
+    while (std::getline(ipFile, line, '\n'))
     {
+        std::cout << line << std::endl;
         std::stringstream iss(line);
         int count;
+        std::string countstr;
         std::string domain;
         // breaking condition
-        if ("stop" == line) {
+        if (0 == line.compare(0, 4, "stop")) {
             break;
         }
         if ('$' == line[0]) {
             iss >> domain;
-            iss >> count;
+            //getline(iss, domain, ' ');
+            iss >> countstr;
+            count = std::stoi(countstr);
             addItem(&domain[1], count);
         }
         else {
-            iss >> count;
+            iss >> countstr;
+            count = std::stoi(countstr);
             printTopItems(count);
         }
     }
