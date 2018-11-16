@@ -17,8 +17,6 @@ private:
     std::ifstream ipFile;
     std::ofstream opFile;
 
-    std::string removeSpaces(std::string str);
-
 public:
     FrequencyCounter(std::string ipPath, std::string opPath);
     ~FrequencyCounter();
